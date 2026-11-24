@@ -1,0 +1,1168 @@
+```html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MARVEL | ALWAYS READY... - نظام إدارة البلايستيشن والكافيه</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Cairo for Arabic & Anton/Oswald for MARVEL Logo -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Cairo', 'sans-serif'],
+                        brand: ['Anton', 'sans-serif'],
+                    },
+                    colors: {
+                        pitch: '#050505',
+                        surface: '#0f0f0f',
+                        card: '#161616',
+                        cardHover: '#1f1f1f',
+                        borderDark: '#2a2a2a',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Scrollbar & Base Aesthetics matching MARVEL Pure Black & White Identity */
+        body {
+            background-color: #050505;
+            color: #ffffff;
+            font-family: 'Cairo', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .marvel-logo-text {
+            font-family: 'Anton', sans-serif;
+            letter-spacing: 0.04em;
+            line-height: 0.9;
+        }
+
+        .marvel-sub-text {
+            letter-spacing: 0.28em;
+            font-weight: 700;
+        }
+
+        /* Custom subtle scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333333;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ffffff;
+        }
+
+        /* Active device subtle pulse border */
+        @keyframes activeGlow {
+            0%, 100% { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35), 0 8px 25px -5px rgba(255, 255, 255, 0.08); }
+            50% { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.75), 0 8px 30px -5px rgba(255, 255, 255, 0.18); }
+        }
+        .device-active-card {
+            animation: activeGlow 3s infinite ease-in-out;
+        }
+
+        /* Print styles for Receipt */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #receiptPrintArea, #receiptPrintArea * {
+                visibility: visible;
+                color: #000000 !important;
+                background: #ffffff !important;
+            }
+            #receiptPrintArea {
+                position: fixed;
+                left: 0;
+                top: 0;
+                width: 100%;
+                padding: 20px;
+                border: none !important;
+                box-shadow: none !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-pitch text-white min-h-screen flex flex-col selection:bg-white selection:text-black">
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-5 left-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Top Header Bar (Inspired by Uploaded MARVEL Logo) -->
+    <header class="bg-pitch border-b border-borderDark sticky top-0 z-40 backdrop-blur-md bg-opacity-95">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-4">
+            <!-- Brand Logo -->
+            <div class="flex items-center gap-4">
+                <div class="bg-black border border-white/20 px-4 py-2 rounded-xl flex flex-col items-center justify-center select-none shadow-lg">
+                    <span class="marvel-logo-text text-3xl sm:text-4xl text-white uppercase">MARVEL</span>
+                    <span class="marvel-sub-text text-[9px] sm:text-[10px] text-white/90 uppercase mt-1">ALWAYS READY...</span>
+                </div>
+                <div class="hidden sm:block border-r border-borderDark pr-4">
+                    <h1 class="text-sm font-bold text-white">نظام الإدارة المتكامل</h1>
+                    <p class="text-xs text-neutral-400" id="liveClockDisplay">جاري التحميل...</p>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto max-w-full pb-1 sm:pb-0">
+                <button onclick="switchTab('devices')" id="tab-devices" class="nav-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 bg-white text-black">
+                    <i class="fa-brands fa-playstation"></i>
+                    <span>الأجهزة</span>
+                </button>
+                <button onclick="switchTab('cafe')" id="tab-cafe" class="nav-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 bg-card text-neutral-300 hover:bg-cardHover hover:text-white border border-borderDark">
+                    <i class="fa-solid fa-mug-hot"></i>
+                    <span>كافيه خارجي</span>
+                </button>
+                <button onclick="switchTab('products')" id="tab-products" class="nav-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 bg-card text-neutral-300 hover:bg-cardHover hover:text-white border border-borderDark">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                    <span>المنتجات</span>
+                </button>
+                <button onclick="switchTab('transactions')" id="tab-transactions" class="nav-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 bg-card text-neutral-300 hover:bg-cardHover hover:text-white border border-borderDark">
+                    <i class="fa-solid fa-receipt"></i>
+                    <span>المعاملات</span>
+                </button>
+                <button onclick="switchTab('inventory')" id="tab-inventory" class="nav-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 bg-card text-neutral-300 hover:bg-cardHover hover:text-white border border-borderDark">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>الجرد الشهري</span>
+                </button>
+                <button onclick="switchTab('admin')" id="tab-admin" class="nav-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 bg-card text-neutral-300 hover:bg-cardHover hover:text-white border border-borderDark">
+                    <i id="adminLockIcon" class="fa-solid fa-lock text-amber-400"></i>
+                    <span>الإدارة</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
+
+        <!-- ==================== 1. DEVICES DASHBOARD SECTION ==================== -->
+        <section id="section-devices" class="space-y-6">
+            <!-- Top Summary Strip & Quick Add Device -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface border border-borderDark p-4 rounded-2xl">
+                <div class="flex flex-wrap items-center gap-4 sm:gap-6">
+                    <div>
+                        <span class="text-xs text-neutral-400 block">الأجهزة الشغالة حالياً</span>
+                        <span class="text-xl font-black text-white" id="statActiveDevices">0 / 0</span>
+                    </div>
+                    <div class="h-8 w-[1px] bg-borderDark hidden sm:block"></div>
+                    <div>
+                        <span class="text-xs text-neutral-400 block">إيراد الجلسات الجارية</span>
+                        <span class="text-xl font-black text-emerald-400" id="statRunningTotal">0.00 ج.م</span>
+                    </div>
+                    <div class="h-8 w-[1px] bg-borderDark hidden sm:block"></div>
+                    <div>
+                        <span class="text-xs text-neutral-400 block">إيراد اليوم المحصّل</span>
+                        <span class="text-xl font-black text-white" id="statTodayRevenue">0.00 ج.م</span>
+                    </div>
+                </div>
+                <button onclick="openDeviceModal()" class="bg-white text-black hover:bg-neutral-200 font-bold text-sm px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-2 shadow-md">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>إضافة جهاز جديد</span>
+                </button>
+            </div>
+
+            <!-- Devices Grid -->
+            <div id="devicesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Device cards injected dynamically via JS -->
+            </div>
+        </section>
+
+        <!-- ==================== 2. DIRECT CAFE ORDER SECTION ==================== -->
+        <section id="section-cafe" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Menu Items Grid -->
+                <div class="lg:col-span-2 bg-surface border border-borderDark rounded-2xl p-5 space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-borderDark pb-4">
+                        <div>
+                            <h2 class="text-lg font-extrabold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-mug-saucer"></i>
+                                <span>منيو الكافيه (طلبات خارجية بدون جهاز)</span>
+                            </h2>
+                            <p class="text-xs text-neutral-400">اختر المشروبات أو السناكس لإضافتها لفاتورة العميل</p>
+                        </div>
+                        <input type="text" id="cafeSearchInput" oninput="renderCafeMenu()" placeholder="ابحث عن مشروب..." class="bg-card border border-borderDark rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-white w-full sm:w-56">
+                    </div>
+
+                    <!-- Category Filter Pills -->
+                    <div id="cafeCategoryPills" class="flex flex-wrap gap-2"></div>
+
+                    <!-- Products Grid -->
+                    <div id="cafeMenuGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+                </div>
+
+                <!-- Current Direct Cafe Cart -->
+                <div class="bg-surface border border-borderDark rounded-2xl p-5 flex flex-col justify-between h-fit sticky top-24">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between border-b border-borderDark pb-3">
+                            <h3 class="font-extrabold text-white text-base">فاتورة كافيه سريعة</h3>
+                            <button onclick="clearDirectCart()" class="text-xs text-red-400 hover:text-red-300">إفراغ</button>
+                        </div>
+
+                        <div>
+                            <label class="text-xs text-neutral-400 block mb-1">اسم العميل / الطاولة (اختياري)</label>
+                            <input type="text" id="directCustomerName" placeholder="مثال: طاولة 2 / تيك أواي" class="w-full bg-card border border-borderDark rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-white">
+                        </div>
+
+                        <div id="directCartItems" class="space-y-2 max-h-72 overflow-y-auto pr-1">
+                            <!-- Cart items -->
+                        </div>
+                    </div>
+
+                    <div class="border-t border-borderDark pt-4 mt-4 space-y-3">
+                        <div class="flex items-center justify-between text-base font-black">
+                            <span>الإجمالي المطلوب:</span>
+                            <span id="directCartTotal" class="text-emerald-400 text-xl">0.00 ج.م</span>
+                        </div>
+                        <button onclick="checkoutDirectCafe()" class="w-full bg-white text-black hover:bg-neutral-200 font-extrabold py-3 rounded-xl transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-check-circle"></i>
+                            <span>تأكيد الطلب وإصدار فاتورة</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== 3. PRODUCTS MANAGEMENT SECTION ==================== -->
+        <section id="section-products" class="hidden space-y-6">
+            <div class="bg-surface border border-borderDark rounded-2xl p-5">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-borderDark pb-4 mb-5">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-white">إدارة المشروبات والمنتجات</h2>
+                        <p class="text-xs text-neutral-400">أضف منتجات جديدة أو عدّل الأسعار والمخزون في أي وقت</p>
+                    </div>
+                    <button onclick="openProductModal()" class="bg-white text-black hover:bg-neutral-200 font-bold text-sm px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>إضافة منتج / مشروب</span>
+                    </button>
+                </div>
+
+                <!-- Products Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right border-collapse">
+                        <thead>
+                            <tr class="border-b border-borderDark text-neutral-400 text-xs">
+                                <th class="py-3 px-4">اسم المنتج</th>
+                                <th class="py-3 px-4">القسم</th>
+                                <th class="py-3 px-4">السعر</th>
+                                <th class="py-3 px-4">المخزون المتاح</th>
+                                <th class="py-3 px-4 text-center">إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTableBody" class="divide-y divide-borderDark text-sm">
+                            <!-- Rows rendered dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== 4. TRANSACTIONS LOG SECTION ==================== -->
+        <section id="section-transactions" class="hidden space-y-6">
+            <div class="bg-surface border border-borderDark rounded-2xl p-5 space-y-5">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-borderDark pb-4">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-white">سجل المعاملات والفواتير</h2>
+                        <p class="text-xs text-neutral-400">جميع الجلسات والطلبات المسجلة مع إمكانية عرض الفاتورة أو إرسالها للعميل</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <select id="txTypeFilter" onchange="renderTransactions()" class="bg-card border border-borderDark rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-white">
+                            <option value="all">كل المعاملات</option>
+                            <option value="ps">جلسات بلايستيشن</option>
+                            <option value="cafe">طلبات كافيه خارجية</option>
+                        </select>
+                        <input type="date" id="txDateFilter" onchange="renderTransactions()" class="bg-card border border-borderDark rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-white">
+                        <button onclick="document.getElementById('txDateFilter').value=''; renderTransactions();" class="bg-card hover:bg-cardHover border border-borderDark px-3 py-2 rounded-xl text-xs text-neutral-300">الكل</button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right border-collapse">
+                        <thead>
+                            <tr class="border-b border-borderDark text-neutral-400 text-xs">
+                                <th class="py-3 px-4">رقم الفاتورة</th>
+                                <th class="py-3 px-4">التاريخ والوقت</th>
+                                <th class="py-3 px-4">النوع / الجهاز</th>
+                                <th class="py-3 px-4">تفاصيل الوقت</th>
+                                <th class="py-3 px-4">المشروبات</th>
+                                <th class="py-3 px-4">الإجمالي</th>
+                                <th class="py-3 px-4 text-center">التقرير</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsTableBody" class="divide-y divide-borderDark text-sm">
+                            <!-- Transactions rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== 5. MONTHLY INVENTORY & REPORTS SECTION ==================== -->
+        <section id="section-inventory" class="hidden space-y-6">
+            <div class="bg-surface border border-borderDark rounded-2xl p-5 space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-borderDark pb-4">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-white">الجرد الشهري والتقارير المالية</h2>
+                        <p class="text-xs text-neutral-400">ملخص الأرباح واستهلاك المشروبات حسب الشهر</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="month" id="inventoryMonthPicker" onchange="renderMonthlyInventory()" class="bg-card border border-borderDark rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-white">
+                        <button onclick="copyMonthlyReport()" class="bg-white text-black hover:bg-neutral-200 font-bold text-xs sm:text-sm px-4 py-2 rounded-xl transition flex items-center gap-2">
+                            <i class="fa-brands fa-whatsapp text-base"></i>
+                            <span>نسخ تقرير الجرد</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-card border border-borderDark p-4 rounded-2xl">
+                        <span class="text-xs text-neutral-400">إجمالي دخل الشهر</span>
+                        <div id="invTotalRevenue" class="text-2xl font-black text-white mt-1">0.00 ج.م</div>
+                    </div>
+                    <div class="bg-card border border-borderDark p-4 rounded-2xl">
+                        <span class="text-xs text-neutral-400">إيرادات البلايستيشن (لعب)</span>
+                        <div id="invPsRevenue" class="text-2xl font-black text-emerald-400 mt-1">0.00 ج.م</div>
+                    </div>
+                    <div class="bg-card border border-borderDark p-4 rounded-2xl">
+                        <span class="text-xs text-neutral-400">إيرادات الكافيه والمشروبات</span>
+                        <div id="invCafeRevenue" class="text-2xl font-black text-amber-400 mt-1">0.00 ج.م</div>
+                    </div>
+                    <div class="bg-card border border-borderDark p-4 rounded-2xl">
+                        <span class="text-xs text-neutral-400">عدد الفواتير والجلسات</span>
+                        <div id="invTxCount" class="text-2xl font-black text-white mt-1">0</div>
+                    </div>
+                </div>
+
+                <!-- Monthly Product Consumption Breakdown -->
+                <div>
+                    <h3 class="text-base font-bold text-white mb-3">جرد استهلاك ومبيعات المشروبات خلال الشهر</h3>
+                    <div class="overflow-x-auto border border-borderDark rounded-xl">
+                        <table class="w-full text-right border-collapse">
+                            <thead class="bg-card">
+                                <tr class="border-b border-borderDark text-neutral-400 text-xs">
+                                    <th class="py-3 px-4">الصنف / المشروب</th>
+                                    <th class="py-3 px-4">الكمية المباعة</th>
+                                    <th class="py-3 px-4">إجمالي المبيعات</th>
+                                    <th class="py-3 px-4">المخزون المتبقي حالياً</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryProductsBody" class="divide-y divide-borderDark text-sm">
+                                <!-- Monthly product stats -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== 6. ADMIN & SETTINGS SECTION ==================== -->
+        <section id="section-admin" class="hidden space-y-6">
+            <!-- Admin Lock Screen -->
+            <div id="adminLockedView" class="max-w-md mx-auto bg-surface border border-borderDark rounded-2xl p-6 text-center space-y-4 my-8">
+                <div class="w-16 h-16 bg-card border border-borderDark rounded-2xl flex items-center justify-center mx-auto text-2xl text-white">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h2 class="text-xl font-black text-white">منطقة الإدارة المحمية</h2>
+                <p class="text-xs text-neutral-400">أدخل كلمة مرور الأدمن للوصول للإعدادات وتغيير الباسورد وإدارة الأجهزة</p>
+                <div class="space-y-3 text-right">
+                    <input type="password" id="adminPasswordInput" onkeydown="if(event.key==='Enter') unlockAdmin()" placeholder="كلمة المرور (الافتراضية: 1234)" class="w-full bg-card border border-borderDark rounded-xl px-4 py-3 text-center text-white tracking-widest focus:outline-none focus:border-white">
+                    <button onclick="unlockAdmin()" class="w-full bg-white text-black hover:bg-neutral-200 font-extrabold py-3 rounded-xl transition">
+                        فتح لوحة الإدارة
+                    </button>
+                </div>
+            </div>
+
+            <!-- Admin Unlocked Settings View -->
+            <div id="adminUnlockedView" class="hidden space-y-6">
+                <div class="flex items-center justify-between bg-surface border border-borderDark p-4 rounded-2xl">
+                    <div class="flex items-center gap-3">
+                        <span class="w-3 h-3 rounded-full bg-emerald-400"></span>
+                        <span class="font-bold text-sm">وضع الأدمن مفعل حالياً</span>
+                    </div>
+                    <button onclick="lockAdmin()" class="bg-card hover:bg-cardHover border border-borderDark text-xs font-bold px-4 py-2 rounded-xl text-amber-400 flex items-center gap-2">
+                        <i class="fa-solid fa-lock"></i>
+                        <span>قفل لوحة الإدارة</span>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Change Admin Password -->
+                    <div class="bg-surface border border-borderDark rounded-2xl p-5 space-y-4">
+                        <h3 class="font-extrabold text-white text-base border-b border-borderDark pb-3">تغيير كلمة مرور الأدمن</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="text-xs text-neutral-400 block mb-1">كلمة المرور الحالية</label>
+                                <input type="password" id="oldAdminPass" class="w-full bg-card border border-borderDark rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-white">
+                            </div>
+                            <div>
+                                <label class="text-xs text-neutral-400 block mb-1">كلمة المرور الجديدة</label>
+                                <input type="password" id="newAdminPass" class="w-full bg-card border border-borderDark rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-white">
+                            </div>
+                            <div>
+                                <label class="text-xs text-neutral-400 block mb-1">تأكيد كلمة المرور الجديدة</label>
+                                <input type="password" id="confirmAdminPass" class="w-full bg-card border border-borderDark rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-white">
+                            </div>
+                            <button onclick="changeAdminPassword()" class="w-full bg-white text-black hover:bg-neutral-200 font-bold py-2.5 rounded-xl text-sm transition">
+                                حفظ كلمة المرور الجديدة
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Manage Devices & Danger Zone -->
+                    <div class="bg-surface border border-borderDark rounded-2xl p-5 space-y-4 flex flex-col justify-between">
+                        <div class="space-y-3">
+                            <h3 class="font-extrabold text-white text-base border-b border-borderDark pb-3">إدارة الأجهزة المسجلة</h3>
+                            <div id="adminDevicesList" class="space-y-2 max-h-60 overflow-y-auto">
+                                <!-- List of devices with Edit/Delete -->
+                            </div>
+                        </div>
+
+                        <div class="border-t border-borderDark pt-4 space-y-2">
+                            <h4 class="text-xs font-bold text-red-400">منطقة الخطر (إعادة ضبط البيانات)</h4>
+                            <button onclick="openResetConfirmModal()" class="w-full bg-red-950/50 hover:bg-red-900/60 border border-red-800 text-red-300 font-bold py-2.5 rounded-xl text-xs transition">
+                                مسح سجل المعاملات والجرد (تصفير الحسابات)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- 1. Add Drink to Active Device Modal -->
+    <div id="addDrinkToDeviceModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-surface border border-borderDark rounded-2xl max-w-lg w-full p-5 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-borderDark pb-3">
+                <div>
+                    <h3 class="font-extrabold text-white text-base" id="drinkModalDeviceTitle">إضافة مشروب للجهاز</h3>
+                    <p class="text-xs text-neutral-400">اختر المشروبات لإضافتها لحساب العميل الجاري</p>
+                </div>
+                <button onclick="closeModal('addDrinkToDeviceModal')" class="text-neutral-400 hover:text-white text-lg px-2">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <input type="text" id="deviceDrinkSearch" oninput="renderDeviceDrinkPicker()" placeholder="ابحث عن مشروب..." class="w-full bg-card border border-borderDark rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-white">
+
+            <div id="deviceDrinkPickerGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-64 overflow-y-auto p-1">
+                <!-- Products buttons -->
+            </div>
+
+            <!-- Current Orders on this Device -->
+            <div class="border-t border-borderDark pt-3">
+                <span class="text-xs font-bold text-neutral-400 block mb-2">طلبات الجهاز الحالية:</span>
+                <div id="deviceCurrentOrdersList" class="space-y-1.5 max-h-36 overflow-y-auto"></div>
+            </div>
+
+            <div class="flex justify-end pt-2">
+                <button onclick="closeModal('addDrinkToDeviceModal')" class="bg-white text-black font-bold px-5 py-2 rounded-xl text-sm">تم</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Add / Edit Device Modal -->
+    <div id="deviceModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-surface border border-borderDark rounded-2xl max-w-md w-full p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-borderDark pb-3">
+                <h3 class="font-extrabold text-white text-base" id="deviceModalTitle">إضافة جهاز بلايستيشن</h3>
+                <button onclick="closeModal('deviceModal')" class="text-neutral-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <input type="hidden" id="editDeviceId">
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs text-neutral-400 block mb-1">اسم الجهاز / الغرفة</label>
+                    <input type="text" id="deviceNameInput" placeholder="مثال: PS5 - غرفة 1" class="w-full bg-card border border-borderDark rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-white">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-neutral-400 block mb-1">سعر الساعة سنجل (ج.م)</label>
+                        <input type="number" id="deviceSingleRateInput" placeholder="50" class="w-full bg-card border border-borderDark rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-white">
+                    </div>
+                    <div>
+                        <label class="text-xs text-neutral-400 block mb-1">سعر الساعة مالتي (ج.م)</label>
+                        <input type="number" id="deviceMultiRateInput" placeholder="70" class="w-full bg-card border border-borderDark rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-white">
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-3">
+                <button onclick="closeModal('deviceModal')" class="bg-card text-neutral-300 px-4 py-2 rounded-xl text-sm">إلغاء</button>
+                <button onclick="saveDevice()" class="bg-white text-black font-bold px-5 py-2 rounded-xl text-sm">حفظ الجهاز</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Add / Edit Product Modal -->
+    <div id="productModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-surface border border-borderDark rounded-2xl max-w-md w-full p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-borderDark pb-3">
+                <h3 class="font-extrabold text-white text-base" id="productModalTitle">إضافة مشروب / منتج</h3>
+                <button onclick="closeModal('productModal')" class="text-neutral-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <input type="hidden" id="editProductId">
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs text-neutral-400 block mb-1">اسم المنتج / المشروب</label>
+                    <input type="text" id="prodNameInput" placeholder="مثال: قهوة تركي / بيبسي" class="w-full bg-card border border-borderDark rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-white">
+                </div>
+                <div>
+                    <label class="text-xs text-neutral-400 block mb-1">القسم</label>
+                    <select id="prodCategoryInput" class="w-full bg-card border border-borderDark rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-white">
+                        <option value="مشروبات ساخنة">مشروبات ساخنة</option>
+                        <option value="مشروبات باردة">مشروبات باردة</option>
+                        <option value="سناكس ومأكولات">سناكس ومأكولات</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-neutral-400 block mb-1">السعر (ج.م)</label>
+                        <input type="number" id="prodPriceInput" placeholder="20" class="w-full bg-card border border-borderDark rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-white">
+                    </div>
+                    <div>
+                        <label class="text-xs text-neutral-400 block mb-1">الكمية بالمخزن</label>
+                        <input type="number" id="prodStockInput" placeholder="50" class="w-full bg-card border border-borderDark rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-white">
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-3">
+                <button onclick="closeModal('productModal')" class="bg-card text-neutral-300 px-4 py-2 rounded-xl text-sm">إلغاء</button>
+                <button onclick="saveProduct()" class="bg-white text-black font-bold px-5 py-2 rounded-xl text-sm">حفظ المنتج</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Detailed Customer Receipt / Report Modal -->
+    <div id="receiptModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-surface border border-borderDark rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto">
+            <!-- Printable Area -->
+            <div id="receiptPrintArea" class="bg-pitch border border-white/20 rounded-xl p-5 space-y-4 text-white">
+                <!-- Receipt Brand Header -->
+                <div class="text-center border-b border-dashed border-neutral-700 pb-4">
+                    <div class="marvel-logo-text text-3xl text-white uppercase">MARVEL</div>
+                    <div class="marvel-sub-text text-[9px] text-neutral-300 uppercase mt-0.5">ALWAYS READY...</div>
+                    <p class="text-xs text-neutral-400 mt-2">تقرير حساب عميل مفصل</p>
+                </div>
+
+                <!-- Meta info -->
+                <div id="receiptMeta" class="text-xs space-y-1.5 border-b border-dashed border-neutral-700 pb-3"></div>
+
+                <!-- Time Breakdown (if PS session) -->
+                <div id="receiptTimeSection" class="text-xs space-y-1.5 border-b border-dashed border-neutral-700 pb-3"></div>
+
+                <!-- Drinks Breakdown -->
+                <div id="receiptDrinksSection" class="text-xs space-y-1.5 border-b border-dashed border-neutral-700 pb-3"></div>
+
+                <!-- Grand Total -->
+                <div class="flex items-center justify-between pt-1">
+                    <span class="font-extrabold text-sm">الإجمالي النهائي:</span>
+                    <span id="receiptGrandTotal" class="font-black text-xl text-emerald-400">0.00 ج.م</span>
+                </div>
+
+                <div class="text-center text-[11px] text-neutral-500 pt-2">
+                    شكراً لزيارتكم MARVEL - نتمنى لكم وقتاً ممتعاً!
+                </div>
+            </div>
+
+            <!-- Action Buttons (Copy for WhatsApp / Print / Close) -->
+            <div class="grid grid-cols-2 gap-2.5 no-print">
+                <button onclick="copyReceiptForWhatsApp()" class="col-span-2 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold py-3 rounded-xl text-sm transition flex items-center justify-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-lg"></i>
+                    <span>نسخ التقرير المفصل لإرساله للعميل</span>
+                </button>
+                <button onclick="window.print()" class="bg-white hover:bg-neutral-200 text-black font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-print"></i>
+                    <span>طباعة الفاتورة</span>
+                </button>
+                <button onclick="closeModal('receiptModal')" class="bg-card hover:bg-cardHover border border-borderDark text-white font-bold py-2.5 rounded-xl text-xs transition">
+                    إغلاق
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Custom Confirmation Modal (Replaces browser confirm()) -->
+    <div id="confirmModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-surface border border-borderDark rounded-2xl max-w-sm w-full p-5 space-y-4 text-center">
+            <div class="w-12 h-12 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center mx-auto text-xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 id="confirmModalTitle" class="font-extrabold text-white text-base">تأكيد الإجراء</h3>
+            <p id="confirmModalMessage" class="text-xs text-neutral-400 leading-relaxed">هل أنت متأكد؟</p>
+            <div class="flex gap-2 pt-2">
+                <button onclick="closeModal('confirmModal')" class="flex-1 bg-card hover:bg-cardHover text-neutral-300 font-bold py-2.5 rounded-xl text-xs">إلغاء</button>
+                <button id="confirmModalYesBtn" class="flex-1 bg-white text-black hover:bg-neutral-200 font-extrabold py-2.5 rounded-xl text-xs">تأكيد</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== JAVASCRIPT APPLICATION LOGIC ==================== -->
+    <script>
+        // --- State & Storage Keys ---
+        const STORAGE_KEYS = {
+            DEVICES: 'marvel_ps_devices_v1',
+            PRODUCTS: 'marvel_ps_products_v1',
+            TRANSACTIONS: 'marvel_ps_transactions_v1',
+            ADMIN_PASS: 'marvel_ps_admin_pass_v1'
+        };
+
+        let devices = [];
+        let products = [];
+        let transactions = [];
+        let adminPassword = '1234';
+        let isAdminUnlocked = false;
+        let directCart = [];
+        let selectedCafeCategory = 'الكل';
+        let activeDrinkModalDeviceId = null;
+        let currentReceiptText = '';
+
+        // --- Default Initial Data ---
+        const defaultDevices = [
+            { id: 'dev-1', name: 'PS5 - غرفة 1 (VIP)', singleRate: 60, multiRate: 80, activeSession: null },
+            { id: 'dev-2', name: 'PS5 - صالة 2', singleRate: 50, multiRate: 70, activeSession: null },
+            { id: 'dev-3', name: 'PS4 Pro - جهاز 3', singleRate: 35, multiRate: 50, activeSession: null },
+            { id: 'dev-4', name: 'PS4 - جهاز 4', singleRate: 30, multiRate: 45, activeSession: null }
+        ];
+
+        const defaultProducts = [
+            { id: 'prod-1', name: 'شاي أحمر / أخضر', category: 'مشروبات ساخنة', price: 15, stock: 100 },
+            { id: 'prod-2', name: 'قهوة تركي', category: 'مشروبات ساخنة', price: 20, stock: 80 },
+            { id: 'prod-3', name: 'إسبريسو', category: 'مشروبات ساخنة', price: 30, stock: 60 },
+            { id: 'prod-4', name: 'نسكافيه بلاك / جولد', category: 'مشروبات ساخنة', price: 25, stock: 70 },
+            { id: 'prod-5', name: 'بيبسي / سفن آب', category: 'مشروبات باردة', price: 20, stock: 90 },
+            { id: 'prod-6', name: 'ريد بول / باور', category: 'مشروبات باردة', price: 45, stock: 40 },
+            { id: 'prod-7', name: 'مياه معدنية', category: 'مشروبات باردة', price: 10, stock: 120 },
+            { id: 'prod-8', name: 'إندومي جامبو', category: 'سناكس ومأكولات', price: 25, stock: 50 },
+            { id: 'prod-9', name: 'شيبسي عائلي', category: 'سناكس ومأكولات', price: 15, stock: 65 }
+        ];
+
+        // --- Initialization ---
+        function initApp() {
+            try {
+                const savedDevices = localStorage.getItem(STORAGE_KEYS.DEVICES);
+                const savedProducts = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
+                const savedTx = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS);
+                const savedPass = localStorage.getItem(STORAGE_KEYS.ADMIN_PASS);
+
+                devices = savedDevices ? JSON.parse(savedDevices) : defaultDevices;
+                products = savedProducts ? JSON.parse(savedProducts) : defaultProducts;
+                transactions = savedTx ? JSON.parse(savedTx) : [];
+                adminPassword = savedPass || '1234';
+
+                saveAllData();
+
+                // Set default month in inventory picker
+                const now = new Date();
+                const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+                document.getElementById('inventoryMonthPicker').value = currentMonthStr;
+
+                renderDevices();
+                renderCafeMenu();
+                renderDirectCart();
+                renderProductsTable();
+                renderTransactions();
+                renderMonthlyInventory();
+                updateHeaderClock();
+
+                // Start live timer loop (every 1 second)
+                setInterval(() => {
+                    updateHeaderClock();
+                    updateLiveTimers();
+                }, 1000);
+            } catch (err) {
+                console.error('Initialization error:', err);
+                showToast('حدث خطأ أثناء تحميل البيانات المحلية', 'error');
+            }
+        }
+
+        function saveAllData() {
+            localStorage.setItem(STORAGE_KEYS.DEVICES, JSON.stringify(devices));
+            localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
+            localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(transactions));
+            localStorage.setItem(STORAGE_KEYS.ADMIN_PASS, adminPassword);
+        }
+
+        // --- Helper Formatting Functions ---
+        function formatCurrency(amount) {
+            return `${Number(amount || 0).toFixed(2)} ج.م`;
+        }
+
+        function formatDuration(ms) {
+            const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+            const hrs = Math.floor(totalSeconds / 3600);
+            const mins = Math.floor((totalSeconds % 3600) / 60);
+            const secs = totalSeconds % 60;
+            return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function formatTimeOnly(timestamp) {
+            return new Date(timestamp).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function formatDateTime(timestamp) {
+            return new Date(timestamp).toLocaleString('ar-EG', {
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit'
+            });
+        }
+
+        function updateHeaderClock() {
+            const now = new Date();
+            document.getElementById('liveClockDisplay').textContent = now.toLocaleString('ar-EG', {
+                weekday: 'long', year: 'numeric', month: 'short', day: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            });
+        }
+
+        // --- Toast Notification System ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const borderClass = type === 'error' ? 'border-red-500 text-red-200' : 'border-white/40 text-white';
+            const iconClass = type === 'error' ? 'fa-circle-xmark text-red-400' : 'fa-circle-check text-emerald-400';
+
+            toast.className = `bg-card border ${borderClass} px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs sm:text-sm font-bold transition-all duration-300 transform translate-y-2 opacity-0`;
+            toast.innerHTML = `<i class="fa-solid ${iconClass} text-base"></i><span>${message}</span>`;
+
+            container.appendChild(toast);
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // --- Modal Helpers ---
+        function openModal(id) {
+            const el = document.getElementById(id);
+            el.classList.remove('hidden');
+            el.classList.add('flex');
+        }
+
+        function closeModal(id) {
+            const el = document.getElementById(id);
+            el.classList.add('hidden');
+            el.classList.remove('flex');
+        }
+
+        function showConfirm(title, message, onConfirm) {
+            document.getElementById('confirmModalTitle').textContent = title;
+            document.getElementById('confirmModalMessage').textContent = message;
+            const yesBtn = document.getElementById('confirmModalYesBtn');
+            yesBtn.onclick = () => {
+                closeModal('confirmModal');
+                onConfirm();
+            };
+            openModal('confirmModal');
+        }
+
+        // --- Tab Navigation ---
+        function switchTab(tabName) {
+            const tabs = ['devices', 'cafe', 'products', 'transactions', 'inventory', 'admin'];
+            tabs.forEach(t => {
+                document.getElementById(`section-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`tab-${t}`);
+                btn.className = 'nav-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 bg-card text-neutral-300 hover:bg-cardHover hover:text-white border border-borderDark';
+            });
+
+            document.getElementById(`section-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabName}`);
+            activeBtn.className = 'nav-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 bg-white text-black shadow-md';
+
+            if (tabName === 'transactions') renderTransactions();
+            if (tabName === 'inventory') renderMonthlyInventory();
+            if (tabName === 'products') renderProductsTable();
+            if (tabName === 'cafe') renderCafeMenu();
+            if (tabName === 'admin') renderAdminView();
+        }
+
+        // ==================== PLAYSTATION SESSION CALCULATIONS ====================
+        /**
+         * Calculates exact live time cost & total duration across Single/Multi segments.
+         * Each session stores `segments`: [{ mode: 'single'|'multi', rate: number, startTime: ms, endTime: ms|null }]
+         */
+        function calculateSessionLiveMetrics(device) {
+            const session = device.activeSession;
+            if (!session) return { totalMs: 0, timeCost: 0, drinksCost: 0, grandTotal: 0 };
+
+            const now = Date.now();
+            let totalMs = 0;
+            let timeCost = 0;
+
+            session.segments.forEach(seg => {
+                const end = seg.endTime || now;
+                const durationMs = Math.max(0, end - seg.startTime);
+                totalMs += durationMs;
+                const hours = durationMs / (1000 * 60 * 60);
+                timeCost += hours * seg.rate;
+            });
+
+            const drinksCost = (session.orders || []).reduce((sum, item) => sum + (item.price * item.qty), 0);
+            const grandTotal = timeCost + drinksCost;
+
+            return { totalMs, timeCost, drinksCost, grandTotal };
+        }
+
+        // --- Render Devices Grid ---
+        function renderDevices() {
+            const grid = document.getElementById('devicesGrid');
+            grid.innerHTML = '';
+
+            devices.forEach(device => {
+                const isRunning = Boolean(device.activeSession);
+                const metrics = calculateSessionLiveMetrics(device);
+                const currentMode = isRunning ? device.activeSession.currentMode : (device.preferredMode || 'single');
+
+                const card = document.createElement('div');
+                card.className = `rounded-2xl p-5 border transition-all flex flex-col justify-between gap-4 ${
+                    isRunning
+                        ? 'bg-card border-white/60 device-active-card'
+                        : 'bg-surface border-borderDark hover:border-neutral-700'
+                }`;
+
+                // Orders summary badges if active
+                let ordersHtml = '';
+                if (isRunning && device.activeSession.orders && device.activeSession.orders.length > 0) {
+                    ordersHtml = `
+                        <div class="bg-pitch/80 border border-borderDark rounded-xl p-2.5 space-y-1.5">
+                            <div class="flex items-center justify-between text-[11px] text-neutral-400">
+                                <span>المشروبات والطلبات (${device.activeSession.orders.reduce((a, b) => a + b.qty, 0)})</span>
+                                <span class="font-bold text-amber-400">${formatCurrency(metrics.drinksCost)}</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5">
+                                ${device.activeSession.orders.map(o => `
+                                    <span class="bg-card border border-borderDark text-[11px] px-2 py-0.5 rounded-lg text-neutral-200">
+                                        ${o.name} ×${o.qty}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="space-y-4">
+                        <!-- Card Top Header -->
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full ${isRunning ? 'bg-emerald-400 animate-ping' : 'bg-neutral-600'}"></span>
+                                    <h3 class="font-black text-base sm:text-lg text-white">${device.name}</h3>
+                                </div>
+                                <p class="text-[11px] text-neutral-400 mt-0.5">
+                                    سنجل: <strong class="text-white">${device.singleRate} ج</strong>/س |
+                                    مالتي: <strong class="text-white">${device.multiRate} ج</strong>/س
+                                </p>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-lg text-[11px] font-extrabold ${
+                                isRunning ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-neutral-800 text-neutral-400'
+                            }">
+                                ${isRunning ? 'شغال الآن' : 'متاح'}
+                            </span>
+                        </div>
+
+                        <!-- Single / Multi Selector Switch -->
+                        <div class="grid grid-cols-2 gap-1.5 bg-pitch p-1 rounded-xl border border-borderDark">
+                            <button onclick="setDeviceMode('${device.id}', 'single')" class="py-2 rounded-lg text-xs font-extrabold transition flex items-center justify-center gap-1.5 ${
+                                currentMode === 'single'
+                                    ? 'bg-white text-black shadow'
+                                    : 'text-neutral-400 hover:text-white'
+                            }">
+                                <i class="fa-solid fa-user"></i>
+                                <span>سنجل (${device.singleRate} ج)</span>
+                            </button>
+                            <button onclick="setDeviceMode('${device.id}', 'multi')" class="py-2 rounded-lg text-xs font-extrabold transition flex items-center justify-center gap-1.5 ${
+                                currentMode === 'multi'
+                                    ? 'bg-white text-black shadow'
+                                    : 'text-neutral-400 hover:text-white'
+                            }">
+                                <i class="fa-solid fa-users"></i>
+                                <span>مالتي (${device.multiRate} ج)</span>
+                            </button>
+                        </div>
+
+                        <!-- Timer & Live Cost Display -->
+                        <div class="bg-pitch border border-borderDark rounded-xl p-3.5 text-center space-y-1">
+                            <div class="text-[11px] text-neutral-400">
+                                ${isRunning ? `بدأ الساعة ${formatTimeOnly(device.activeSession.startTime)}` : 'في انتظار بدء الجلسة'}
+                            </div>
+                            <div id="timer-${device.id}" class="font-mono text-2xl sm:text-3xl font-black tracking-wider ${isRunning ? 'text-white' : 'text-neutral-600'}">
+                                ${isRunning ? formatDuration(metrics.totalMs) : '00:00:00'}
+                            </div>
+                            <div class="flex items-center justify-center gap-3 pt-1 text-xs">
+                                <span class="text-neutral-400">اللعب: <strong id="timecost-${device.id}" class="text-white">${formatCurrency(metrics.timeCost)}</strong></span>
+                                <span class="text-neutral-600">|</span>
+                                <span class="text-neutral-400">الإجمالي: <strong id="totalcost-${device.id}" class="text-emerald-400 text-sm">${formatCurrency(metrics.grandTotal)}</strong></span>
+                            </div>
+                        </div>
+
+                        ${ordersHtml}
+                    </div>
+
+                    <!-- Card Action Buttons -->
+                    <div class="pt-1">
+                        ${!isRunning ? `
+                            <button onclick="startDeviceSession('${device.id}')" class="w-full bg-white hover:bg-neutral-200 text-black font-extrabold py-3 rounded-xl text-sm transition flex items-center justify-center gap-2 shadow-lg">
+                                <i class="fa-solid fa-play"></i>
+                                <span>بدء الوقت (${currentMode === 'single' ? 'سنجل' : 'مالتي'})</span>
+                            </button>
+                        ` : `
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="openAddDrinkToDevice('${device.id}')" class="bg-cardHover hover:bg-neutral-700 border border-white/25 text-white font-bold py-2.5 px-3 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-mug-hot text-amber-400"></i>
+                                    <span>إضافة مشروب</span>
+                                </button>
+                                <button onclick="checkoutDeviceSession('${device.id}')" class="bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold py-2.5 px-3 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                                    <span>إنهاء وحساب</span>
+                                </button>
+                            </div>
+                        `}
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+
+            updateDashboardTopStats();
+        }
+
+        function updateLiveTimers() {
+            let activeCount = 0;
+            let runningTotalRevenue = 0;
+
+            devices.forEach(device => {
+                if (device.activeSession) {
+                    activeCount++;
+                    const metrics = calculateSessionLiveMetrics(device);
+                    runningTotalRevenue += metrics.grandTotal;
+
+                    const timerEl = document.getElementById(`timer-${device.id}`);
+                    const timeCostEl = document.getElementById(`timecost-${device.id}`);
+                    const totalCostEl = document.getElementById(`totalcost-${device.id}`);
+
+                    if (timerEl) timerEl.textContent = formatDuration(metrics.totalMs);
+                    if (timeCostEl) timeCostEl.textContent = formatCurrency(metrics.timeCost);
+                    if (totalCostEl) totalCostEl.textContent = formatCurrency(metrics.grandTotal);
+                }
+            });
+
+            updateDashboardTopStats(activeCount, runningTotalRevenue);
+        }
+
+        function updateDashboardTopStats(activeCountParam, runningRevParam) {
+            let activeCount = activeCountParam;
+            let runningRev = runningRevParam;
+
+            if (activeCount === undefined) {
+                activeCount = 0;
+                runningRev = 0;
+                devices.forEach(d => {
+                    if (d.activeSession) {
+                        activeCount++;
+                        runningRev += calculateSessionLiveMetrics(d).grandTotal;
+                    }
+                });
+            }
+
+            // Calculate today's collected revenue
+            const todayStr = new Date().toISOString().slice(0, 10);
+            const todayCollected = transactions
+                .filter(tx => tx.dateISO.slice(0, 10) === todayStr)
+                .reduce((sum, tx) => sum + tx.grandTotal, 0);
+
+            document.getElementById('statActiveDevices').textContent = `${activeCount} / ${devices.length}`;
+            document.getElementById('statRunningTotal').textContent = formatCurrency(runningRev);
+            document.getElementById('statTodayRevenue').textContent = formatCurrency(todayCollected);
+        }
+
+        // --- Start / Switch Mode / Checkout PS Session ---
+        function startDeviceSession(deviceId) {
+            const device = devices.find(d => d.id === deviceId);
+            if (!device || device.activeSession) return;
+
+            const mode = device.preferredMode || 'single';
+            const rate = mode === 'single' ? device.singleRate : device.multiRate;
+            const now = Date.now();
+
+            device.activeSession = {
+                startTime: now,
+                currentMode: mode,
+                segments: [
+                    { mode, rate, startTime: now, endTime: null }
+                ],
+                orders: []
+            };
+
+            saveAllData();
+            renderDevices();
+            showToast(`تم تشغيل ${device.name} (${mode === 'single' ? 'سنجل' : 'مالتي'})`);
+        }
+
+        function setDeviceMode(deviceId, newMode) {
+            const device = devices.find(d => d.id === deviceId);
+            if (!device) return;
+
+            if (!device.activeSession) {
+                device.preferredMode = newMode;
+                saveAllData();
+                renderDevices();
+                return;
+            }
+
+            // Switch mode mid-session accurately!
+            if (device.activeSession.currentMode === newMode) return;
+
+            const now = Date.now();
+            const currentSeg = device.activeSession.segments[device.activeSession.segments.length - 1];
+            currentSeg.endTime = now;
+
+            const newRate = newMode === 'single' ? device.singleRate : device.multiRate;
+            device.activeSession.currentMode = newMode;
+            device.activeSession.segments.push({
+                mode: newMode,
+                rate: newRate,
+                startTime: now,
+                endTime: null
+            });
+
+            saveAllData();
+            renderDevices();
+            showToast(`تم تحويل ${device.name} إلى ${newMode === 'single' ? 'سنجل' : 'مالتي'}`);
+        }
+
+        function checkoutDeviceSession(deviceId) {
+            const device = devices.find(d => d.id === deviceId);
+            if (!device || !device.activeSession) return;
+
+            showConfirm(
+                'إنهاء الجلسة وإصدار الفاتورة',
+                `هل تريد إنهاء حساب "${device.name}" وإصدار التقرير المفصل للعميل؟`,
+                () => {
+                    const now = Date.now();
+                    const session = device.activeSession;
+                    // Close last segment
+                    const lastSeg = session.segments[session.segments.length - 1];
+                    lastSeg.endTime = now;
+
+                    // Finalize segments details
+                    let totalMs = 0;
+                    let timeCost = 0;
+                    const finalizedSegments = session.segments.map(seg => {
+                        const durMs = Math.max(0, seg.endTime - seg.startTime);
+                        const cost = (durMs / (1000 * 60 * 60)) * seg.rate;
+                        totalMs += durMs;
+                        timeCost += cost;
+                        return {
+                            mode: seg.mode,
+                            rate: seg.rate,
+                            durationMs: durMs,
+                            cost: Number(cost.toFixed(2))
+                        };
+                    });
+
+                    timeCost = Number(timeCost.toFixed(2));
+                    const drinksCost = Number((session.orders || []).reduce((s, o) => s + (o.price * o.qty), 0).toFixed(2));
+                    const grandTotal = Number((timeCost + drinksCost).toFixed(2));
+
+                    const tx = {
+                        id: 'INV-' + Math.floor(100000 + Math.random() * 900000),
+                        type: 'ps',
+                        deviceName: device.name,
+                        dateISO: new Date(now).toISOString(),
+                        startTime: session.startTime,
+                        endTime: now,
+                        totalDurationMs: totalMs,
+                        segments: finalizedSegments,
+                        orders: [...(session.orders || [])],
+                        timeCost,
+                        drinksCost,
+                        grandTotal
+                    };
+
+                    transactions.unshift(tx);
+                    device.activeSession = null;
+                    saveAllData();
+                    renderDevices();
+                    openReceiptModal(tx);
+                    showToast('تم إغلاق الجلسة وحفظ الفاتورة بنجاح');
+                }
+            );
+        }
+
+        // ==================== ADD DRINKS TO ACTIVE DEVICE ====================
+        function openAddDrinkToDevice(deviceId) {
+            const device = devices.find(d => d.id === deviceId);
+            if (!device || !device.activeSession) return;
+
+            activeDrinkModalDeviceId = deviceId;
+            document.getElementById('drinkModalDeviceTitle').textContent = `إضافة مشروب - ${device.name}`;
+            document.getElementById('deviceDrinkSearch').value = '';
+            renderDeviceDrinkPicker();
+            renderDeviceCurrentOrders();
+            openModal('addDrinkToDeviceModal');
+        }
+
+        function renderDeviceDrinkPicker() {
+            const query = document.getElementById('deviceDrinkSearch').value.trim().toLowerCase();
+            const grid = document.getElementById('deviceDrinkPickerGrid');
+            const filtered = products.filter(p => p.name.toLowerCase().includes(query));
+
+            grid.innerHTML = filtered.map(prod => `
+                <button onclick="addProductToDevice('${prod.id}')" class="bg-card hover:bg-cardHover border border-borderDark hover:border-white/40 p-2.5 rounded-xl text-right transition flex flex-col justify-between">
+                    <span class="font-bold text-xs text-white line-clamp-1">${prod.name}</span>
+                    <div class="flex items-center justify-between mt-2">
+                        <span class="text-emerald-400 font-extrabold text-xs">${prod.price} ج</span>
+                        <span class="text-[10px] text-neutral-500">متاح: ${prod.stock}</span>
+                    </div>
+                </button>
+            `).join('');
+        }
+
+        function addProductToDevice(productId) {
+            const device = devices.find(d => d.id === activeDrinkModalDeviceId);
+            const product = products.find(p => p.id === productId);
+            if (!device || !device.activeSession || !product) return;
+
+            if (product.stock > 0) {
+                product.stock -= 1;
+            }
+
+            const existing = device.activeSession.orders.find(o => o.productId === productId);
+            if (existing) {
+                existing.qty += 1;
+            } else {
+                device.activeSession.orders.push({
+                    productId: product.id,
+                    name: product.name,
+                    price: product.price,
+                    qty: 1
+                });
+   
